@@ -2,14 +2,14 @@ package error
 
 const (
 	// Unknown unknown error
-	Unknown = -1
+	Unknown int64 = -1
 	// Internal internal server error
-	Internal = -2
+	Internal int64 = -2
 
 	// Success
-	Success = 0
+	Success int64 = 0
 	// ErrParams parameter error
-	ErrParams = 1
+	ErrParams int64 = 1
 )
 
 type Table map[int64]string
