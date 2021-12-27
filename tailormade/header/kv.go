@@ -18,20 +18,33 @@ func MutateContext(c CTX) context.Context {
 	return ctx
 }
 
-func GetRequestIDKV(ctx context.Context) (string, string) {
+type KV []string
+
+func (k KV) Wreck() (string, string) {
+	switch len(k) {
+	case 0:
+		return "", ""
+	case 1:
+		return k[0], ""
+	default:
+		return k[0], k[1]
+	}
+}
+
+func GetRequestIDKV(ctx context.Context) KV {
 	i := ctx.Value(requestID)
 	rid, ok := i.(string)
 	if ok {
-		return requestID, rid
+		return KV{requestID, rid}
 	}
-	return requestID, "unexpected type"
+	return KV{requestID, "unexpected type"}
 }
 
-func GetTimezone(ctx context.Context) (string, string) {
+func GetTimezone(ctx context.Context) KV {
 	i := ctx.Value(timezone)
 	tz, ok := i.(string)
 	if ok {
-		return timezone, tz
+		return KV{timezone, tz}
 	}
-	return timezone, "unexpected type"
+	return KV{timezone, "unexpected type"}
 }
