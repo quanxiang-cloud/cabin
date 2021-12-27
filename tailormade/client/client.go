@@ -60,6 +60,7 @@ func POST(ctx context.Context, client *http.Client, uri string, params interface
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add(header.GetRequestIDKV(ctx))
+	req.Header.Add(header.GetTimezone(ctx))
 
 	response, err := client.Do(req)
 	if err != nil {
