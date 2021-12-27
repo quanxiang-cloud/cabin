@@ -5,7 +5,7 @@ import "context"
 const (
 	requestID = "Request-Id"
 
-	timezone = "timezone"
+	timezone = "Timezone"
 )
 
 type key string
