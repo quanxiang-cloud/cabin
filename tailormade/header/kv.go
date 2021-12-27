@@ -31,6 +31,13 @@ func (k KV) Wreck() (string, string) {
 	}
 }
 
+func (k KV) Fuzzy() (result []interface{}) {
+	for _, elem := range k {
+		result = append(result, elem)
+	}
+	return
+}
+
 func GetRequestIDKV(ctx context.Context) KV {
 	i := ctx.Value(requestID)
 	rid, ok := i.(string)
