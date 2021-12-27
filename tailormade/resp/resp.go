@@ -28,6 +28,7 @@ func (r *Resp) Context(c context, code ...int) {
 }
 
 func Format(data interface{}, err error) (r *Resp) {
+	r = new(Resp)
 	if err == nil {
 		r.Code = e.Success
 		r.Data = data

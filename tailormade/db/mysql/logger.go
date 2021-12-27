@@ -56,21 +56,21 @@ func msssage(format string, args ...interface{}) string {
 // Info print info
 func (l Gorm) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= lg.Info {
-		l.log.Info(msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
+		l.log.Info("SQL", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
 	}
 }
 
 // Warn print warn messages
 func (l Gorm) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= lg.Warn {
-		l.log.Info("warn", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
+		l.log.Info("warn", "SQL", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
 	}
 }
 
 // Error print error messages
 func (l Gorm) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= lg.Error {
-		l.log.Info("error", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
+		l.log.Info("error", "SQL", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
 	}
 }
 
@@ -82,24 +82,24 @@ func (l Gorm) Trace(ctx context.Context, begin time.Time, fc func() (string, int
 		case err != nil && l.LogLevel >= lg.Error:
 			sql, rows := fc()
 			if rows == -1 {
-				l.log.Info("debug", msssage(l.traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, "-", sql))
+				l.log.Info("debug", "SQL", msssage(l.traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, "-", sql))
 			} else {
-				l.log.Info("debug", msssage(l.traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, rows, sql))
+				l.log.Info("debug", "SQL", msssage(l.traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, rows, sql))
 			}
 		case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= lg.Warn:
 			sql, rows := fc()
 			slowLog := fmt.Sprintf("SLOW SQL >= %v", l.SlowThreshold)
 			if rows == -1 {
-				l.log.Info("debug", msssage(l.traceWarnStr, utils.FileWithLineNum(), slowLog, float64(elapsed.Nanoseconds())/1e6, "-", sql))
+				l.log.Info("debug", "SQL", msssage(l.traceWarnStr, utils.FileWithLineNum(), slowLog, float64(elapsed.Nanoseconds())/1e6, "-", sql))
 			} else {
-				l.log.Info("debug", msssage(l.traceWarnStr, utils.FileWithLineNum(), slowLog, float64(elapsed.Nanoseconds())/1e6, rows, sql))
+				l.log.Info("debug", "SQL", msssage(l.traceWarnStr, utils.FileWithLineNum(), slowLog, float64(elapsed.Nanoseconds())/1e6, rows, sql))
 			}
 		case l.LogLevel >= lg.Info:
 			sql, rows := fc()
 			if rows == -1 {
-				l.log.Info("debug", msssage(l.traceStr, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, "-", sql))
+				l.log.Info("debug", "SQL", msssage(l.traceStr, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, "-", sql))
 			} else {
-				l.log.Info("debug", msssage(l.traceStr, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, rows, sql))
+				l.log.Info("debug", "SQL", msssage(l.traceStr, utils.FileWithLineNum(), float64(elapsed.Nanoseconds())/1e6, rows, sql))
 			}
 		}
 	}
