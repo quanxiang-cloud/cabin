@@ -9,6 +9,11 @@ const (
 	ISO8601 = "2006-01-02T15:04:05.999Z"
 )
 
+// Time time now utc
+func Time() time.Time {
+	return time.Now().UTC()
+}
+
 // NowUnix current UTC timestamp.
 func NowUnix() int64 {
 	return time.Now().UTC().UnixNano() / 1e6
