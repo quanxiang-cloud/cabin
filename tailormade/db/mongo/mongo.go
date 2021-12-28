@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package mongo
 
 import (
@@ -19,6 +20,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// Config mongo config
 type Config struct {
 	Hosts      []string
 	Direct     bool
@@ -32,6 +34,7 @@ type Config struct {
 	}
 }
 
+// New return mongo client
 func New(conf *Config) (*mongo.Client, error) {
 	opts := options.Client().
 		SetDirect(conf.Direct).

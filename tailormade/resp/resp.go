@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package resp
 
 import (
@@ -23,12 +24,14 @@ type context interface {
 	JSON(code int, obj interface{})
 }
 
+// Resp unified encapsulation of business return values.
 type Resp struct {
 	e.Error
 
 	Data interface{} `json:"data"`
 }
 
+// Context write http status
 func (r *Resp) Context(c context, code ...int) {
 	status := http.StatusOK
 	if r.Code == e.Unknown {
@@ -39,6 +42,7 @@ func (r *Resp) Context(c context, code ...int) {
 	c.JSON(status, r)
 }
 
+// Format formatting return value
 func Format(data interface{}, err error) (r *Resp) {
 	r = new(Resp)
 	if err == nil {

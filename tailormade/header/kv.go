@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package header
 
 import "context"
@@ -22,6 +23,8 @@ const (
 
 type key string
 
+// MutateContext return context.Context,
+// carry request id and timezone if value exists.
 func MutateContext(c CTX) context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, key(requestID), c.GetHeader(requestID))
@@ -43,6 +46,7 @@ func (k KV) Wreck() (string, string) {
 	}
 }
 
+// Fuzzy return key and value as []interface
 func (k KV) Fuzzy() (result []interface{}) {
 	for _, elem := range k {
 		result = append(result, elem)
@@ -50,6 +54,7 @@ func (k KV) Fuzzy() (result []interface{}) {
 	return
 }
 
+// GetRequestIDKV return request id
 func GetRequestIDKV(ctx context.Context) KV {
 	i := ctx.Value(requestID)
 	rid, ok := i.(string)
@@ -59,6 +64,7 @@ func GetRequestIDKV(ctx context.Context) KV {
 	return KV{requestID, "unexpected type"}
 }
 
+// GetTimezone return timezone
 func GetTimezone(ctx context.Context) KV {
 	i := ctx.Value(timezone)
 	tz, ok := i.(string)

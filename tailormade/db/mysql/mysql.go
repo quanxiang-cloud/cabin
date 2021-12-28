@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package mysql
 
 import (
@@ -22,7 +23,7 @@ import (
 	lg "gorm.io/gorm/logger"
 )
 
-// Config 配置
+// Config mysql config
 type Config struct {
 	Host     string
 	DB       string
@@ -44,6 +45,7 @@ const (
 	DSN_UTF8MB4 = "%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local"
 )
 
+// String return dsn string
 func (c *Config) String() string {
 	if c.dsn == "" {
 		c.dsn = DSN_DEFAULT
@@ -51,6 +53,7 @@ func (c *Config) String() string {
 	return c.string(c.dsn)
 }
 
+// SetDSN set dsn
 func (c *Config) SetDSN(dsn string) {
 	c.dsn = dsn
 }
@@ -59,7 +62,7 @@ func (c *Config) string(format string) string {
 	return fmt.Sprintf(format, c.User, c.Password, c.Host, c.DB)
 }
 
-// New 创建数据库连接
+// New return a gorm db
 func New(config Config, log logr.Logger) (*gorm.DB, error) {
 	var logger lg.Interface
 	if config.Log {
