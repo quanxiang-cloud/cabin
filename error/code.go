@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package error
 
 const (
@@ -18,14 +19,16 @@ const (
 	// Internal internal server error
 	Internal int64 = -2
 
-	// Success
+	// Success success
 	Success int64 = 0
 	// ErrParams parameter error
 	ErrParams int64 = 1
 )
 
+// Table map[code]opywriting
 type Table map[int64]string
 
+// CodeTable error value comparison table
 var CodeTable Table
 
 var baseCode = map[int64]string{

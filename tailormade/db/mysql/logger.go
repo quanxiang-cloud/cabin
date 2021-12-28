@@ -10,6 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package mysql
 
 import (
@@ -22,8 +23,8 @@ import (
 	"gorm.io/gorm/utils"
 )
 
-// Gorm gorm logger
-type Gorm struct {
+// logger gorm logger
+type logger struct {
 	log logr.Logger
 	lg.Config
 	infoStr, warnStr, errStr            string
@@ -42,7 +43,7 @@ func newLogger(log logr.Logger, config lg.Config) lg.Interface {
 		traceErrStr  = "%s %s\n[%.3fms] [rows:%v] %s"
 	)
 
-	return &Gorm{
+	return &logger{
 		log:          log,
 		Config:       config,
 		infoStr:      infoStr,
@@ -55,7 +56,7 @@ func newLogger(log logr.Logger, config lg.Config) lg.Interface {
 }
 
 // LogMode log mode
-func (l *Gorm) LogMode(level lg.LogLevel) lg.Interface {
+func (l *logger) LogMode(level lg.LogLevel) lg.Interface {
 	newlogger := *l
 	newlogger.LogLevel = level
 	return &newlogger
@@ -66,28 +67,28 @@ func msssage(format string, args ...interface{}) string {
 }
 
 // Info print info
-func (l Gorm) Info(ctx context.Context, msg string, data ...interface{}) {
+func (l logger) Info(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= lg.Info {
 		l.log.Info("SQL", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
 	}
 }
 
 // Warn print warn messages
-func (l Gorm) Warn(ctx context.Context, msg string, data ...interface{}) {
+func (l logger) Warn(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= lg.Warn {
 		l.log.Info("warn", "SQL", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
 	}
 }
 
 // Error print error messages
-func (l Gorm) Error(ctx context.Context, msg string, data ...interface{}) {
+func (l logger) Error(ctx context.Context, msg string, data ...interface{}) {
 	if l.LogLevel >= lg.Error {
 		l.log.Info("error", "SQL", msssage(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...))
 	}
 }
 
 // Trace print sql message
-func (l Gorm) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+func (l logger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	if l.LogLevel > 0 {
 		elapsed := time.Since(begin)
 		switch {
