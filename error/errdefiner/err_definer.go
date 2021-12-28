@@ -49,7 +49,7 @@ func (r *errorDefiner) MustReg(code int64, msg string) ErrorCode {
 	}
 	r.codeTable[code] = msg
 	c := ErrorCode(code)
-	if !withFormat(msg) { // without format parmeter
+	if !withFormat(msg) { // without format parameter
 		_ = c.NewError() // generate cacheErr
 	}
 	return c
