@@ -39,6 +39,7 @@ func newPackLogr(cfg *Config) *packLogr {
 	return p.init(cfg)
 }
 
+// init reset the log level of logger
 func (p *packLogr) init(cfg *Config) *packLogr {
 	lv := DebugLevel.Int()
 
@@ -148,7 +149,7 @@ func (p *packLogr) log(lv Level, format string, fmtArgs []interface{}, context [
 	case format == "" && len(fmtArgs) > 0:
 		msg = fmt.Sprint(fmtArgs...)
 	case format != "" && len(fmtArgs) > 0:
-		msg = fmt.Sprintf(msg, fmtArgs...)
+		msg = fmt.Sprintf(format, fmtArgs...)
 	}
 
 	args := p.handleFields(lv.Int(), context, p.keyAndValues...)
@@ -156,38 +157,36 @@ func (p *packLogr) log(lv Level, format string, fmtArgs []interface{}, context [
 		p.keyAndValues = args[:len(p.keyAndValues)]
 	}
 
-	v := p.l
 	switch lv {
 	case DebugLevel:
-		v.Debug(msg, args...)
+		p.l.Debug(msg, args...)
 	case InfoLevel:
-		v.Info(msg, args...)
+		p.l.Info(msg, args...)
 	case WarnLevel:
-		v.Warn(msg, args...)
+		p.l.Warn(msg, args...)
 	case ErrorLevel:
-		v.Error(msg, args...)
+		p.l.Error(msg, args...)
 	case DPanicLevel:
-		v.DPanic(msg, args...)
+		p.l.DPanic(msg, args...)
 	case PanicLevel:
-		v.Panic(msg, args...)
+		p.l.Panic(msg, args...)
 	case FatalLevel:
-		v.Fatal(msg, args...)
+		p.l.Fatal(msg, args...)
 	}
 }
 
-// WithValues returns a new LoggerObject with additional key/value pairs.
+// WithValues returns a new Logger with additional key/value pairs.
 func (p *packLogr) WithValues(keyAndValues ...interface{}) AdaptedLogger {
 	n := &packLogr{
 		l:              p.l.With(p.handleFields(noLevel, keyAndValues)...),
 		minLevel:       p.minLevel,
 		allowZapFields: p.allowZapFields,
 		keyAndValues:   append([]zap.Field(nil), p.keyAndValues...),
-		//keyAndValues:   p.handleFields(noLevel, keyAndValues),
 	}
 	return n
 }
 
-// WithName returns a new LoggerObject with the specified name appended.
+// WithName returns a new Logger with the specified name appended.
 func (p *packLogr) WithName(name string) AdaptedLogger {
 	n := &packLogr{
 		l:              p.l.Named(name),
@@ -201,7 +200,7 @@ func (p *packLogr) WithName(name string) AdaptedLogger {
 // PutError write log with error
 func (p *packLogr) PutError(err error, msg string, keyAndValues ...interface{}) {
 	if err != nil {
-		keyAndValues = append([]interface{}{"error", err}, keyAndValues...)
+		keyAndValues = append([]interface{}{ZapField("error", err)}, keyAndValues...)
 	}
 	p.log(ErrorLevel, msg, nil, keyAndValues)
 }

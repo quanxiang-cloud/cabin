@@ -3,10 +3,14 @@ package logger
 // Logger is the default logger object.
 var Logger = New(nil)
 
-// New create a new LoggerAdaptor
+// New create a new Logger
 //
 // The cfg is optional, we use cfg.Level only.
-// If env value has been set "set CABIN_LOG_LEVEL=0", we use it instead of cfg.
+// NOTE: there are 4 ways to control logger.Level(with priority descend):
+// 1. value of "DefaultLogLevel"
+// 2. value of "os.Env.EnvLogLevel" eg: "set CABIN_LOG_LEVEL=0"
+// 3. value of Config.Level
+// 4. default value DebugLevel(-1)
 func New(cfg *Config) AdaptedLogger {
 	return newPackLogr(cfg)
 }
