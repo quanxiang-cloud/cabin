@@ -32,7 +32,7 @@ func newPackLogr(cfg *Config) *packLogr {
 	}
 	p := &packLogr{
 		l:              zapLogger,
-		minLevel:       DebugLevel,
+		minLevel:       _defaultLevel,
 		allowZapFields: true,
 		keyAndValues:   nil,
 	}
@@ -41,7 +41,7 @@ func newPackLogr(cfg *Config) *packLogr {
 
 // init reset the log level of logger
 func (p *packLogr) init(cfg *Config) *packLogr {
-	lv := DebugLevel.Int()
+	lv := _defaultLevel.Int()
 
 	env, err := GetLogLevelFromEnv()
 	switch {
@@ -51,8 +51,13 @@ func (p *packLogr) init(cfg *Config) *packLogr {
 		lv = cfg.Level
 	}
 
-	p.minLevel = Level(lv)
-	p.Infow("[init-log-level]", ZapField("level", lv))
+	if err := validateLogLevel(lv); err == nil {
+		p.minLevel = Level(lv)
+		p.l.WithOptions(zap.AddCallerSkip(1)).Info("init-logger-level", ZapField("level", lv))
+	} else {
+		p.PutError(err, "init-logger-level", zap.Int("level", lv))
+	}
+
 	return p
 }
 
@@ -141,9 +146,10 @@ func zapIt(field string, val interface{}) zap.Field {
 }
 
 func (p *packLogr) log(lv Level, format string, fmtArgs []interface{}, context []interface{}) {
-	if lv < DPanicLevel && lv < p.minLevel { //ignore level with too low priority
+	if lv <= _maxIgnoreLevel && lv < p.minLevel { //ignore level with too low priority
 		return
 	}
+
 	msg := format
 	switch {
 	case format == "" && len(fmtArgs) > 0:
