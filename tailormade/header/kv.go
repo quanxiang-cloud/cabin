@@ -28,7 +28,7 @@ type key string
 func MutateContext(c CTX) context.Context {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, key(requestID), c.GetHeader(requestID))
-	ctx = context.WithValue(ctx, key(requestID), c.GetHeader(timezone))
+	ctx = context.WithValue(ctx, key(timezone), c.GetHeader(timezone))
 
 	return ctx
 }
