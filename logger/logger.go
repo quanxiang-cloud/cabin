@@ -11,8 +11,8 @@ var Logger AdaptedLogger = New(nil)
 // 2. value of "os.Getenv(CABIN_LOG_LEVEL)" eg: "set CABIN_LOG_LEVEL=0"
 // 3. value of Config.Level
 // 4. default value DebugLevel(-1)
-func New(cfg *Config) AdaptedLogger {
-	return newPackLogr(cfg)
+func New(cfg *Config, options ...Option) AdaptedLogger {
+	return newPackLogr(cfg, options...)
 }
 
 // AdaptedLogger is the interface that adapt zap.logger
@@ -22,6 +22,13 @@ type AdaptedLogger interface {
 
 	// WithName returns a new Logger with the specified name appended.
 	WithName(name string) AdaptedLogger
+
+	// WithLevel returns a new Logger with the specified level filter.
+	WithLevel(level Level) AdaptedLogger
+
+	// WithOptions clones the current Logger, applies the supplied Options, and
+	// returns the resulting Logger. It's safe to use concurrently.
+	WithOptions(opts ...Option) AdaptedLogger
 
 	// PutError write log with error
 	PutError(err error, msg string, keysAndValues ...interface{})

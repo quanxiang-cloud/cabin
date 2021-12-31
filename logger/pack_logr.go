@@ -25,8 +25,11 @@ type packLogr struct {
 	keyAndValues    []zap.Field
 }
 
-func newPackLogr(cfg *Config) *packLogr {
-	zapLogger, err := zap.NewDevelopment(zap.AddCallerSkip(2))
+func newPackLogr(cfg *Config, options ...Option) *packLogr {
+	opts := append([]Option{
+		zap.AddCallerSkip(2),
+		zap.AddStacktrace(zap.DPanicLevel)}, options...)
+	zapLogger, err := zap.NewDevelopment(opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -51,9 +54,13 @@ func (p *packLogr) init(cfg *Config) *packLogr {
 		lv = cfg.Level
 	}
 
+	return p.initLevel(lv)
+}
+
+func (p *packLogr) initLevel(lv int) *packLogr {
 	if err := validateLogLevel(lv); err == nil {
 		p.minLevel = Level(lv)
-		p.l.WithOptions(zap.AddCallerSkip(1)).Info("init-logger-level", ZapField("level", lv))
+		p.l.WithOptions(zap.AddCallerSkip(2)).Info("init-logger-level", ZapField("level", lv))
 	} else {
 		p.PutError(err, "init-logger-level", zap.Int("level", lv))
 	}
@@ -181,25 +188,39 @@ func (p *packLogr) log(lv Level, format string, fmtArgs []interface{}, context [
 	}
 }
 
-// WithValues returns a new Logger with additional key/value pairs.
-func (p *packLogr) WithValues(keyAndValues ...interface{}) AdaptedLogger {
-	n := &packLogr{
-		l:              p.l.With(p.handleFields(noLevel, keyAndValues)...),
+func (p *packLogr) clone() *packLogr {
+	return &packLogr{
+		l:              p.l,
 		minLevel:       p.minLevel,
 		allowZapFields: p.allowZapFields,
 		keyAndValues:   append([]zap.Field(nil), p.keyAndValues...),
 	}
+}
+
+// WithValues returns a new Logger with additional key/value pairs.
+func (p *packLogr) WithValues(keyAndValues ...interface{}) AdaptedLogger {
+	n := p.clone()
+	n.l = p.l.With(p.handleFields(noLevel, keyAndValues)...)
 	return n
 }
 
 // WithName returns a new Logger with the specified name appended.
 func (p *packLogr) WithName(name string) AdaptedLogger {
-	n := &packLogr{
-		l:              p.l.Named(name),
-		minLevel:       p.minLevel,
-		allowZapFields: p.allowZapFields,
-		keyAndValues:   append([]zap.Field(nil), p.keyAndValues...),
-	}
+	n := p.clone()
+	n.l = p.l.Named(name)
+	return n
+}
+
+// WithLevel returns a new Logger with the specified level filter.
+func (p *packLogr) WithLevel(level Level) AdaptedLogger {
+	return p.clone().initLevel(level.Int())
+}
+
+// WithOptions clones the current Logger, applies the supplied Options, and
+// returns the resulting Logger. It's safe to use concurrently.
+func (p *packLogr) WithOptions(opts ...Option) AdaptedLogger {
+	n := p.clone()
+	n.l = p.l.WithOptions(opts...)
 	return n
 }
 

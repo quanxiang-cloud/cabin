@@ -51,6 +51,15 @@ func TestLogger(t *testing.T) {
 	log.Fatal("fatal")
 }
 
+func TestOptions(t *testing.T) {
+	os.Setenv(logger.EnvLogLevel, "-1")
+
+	logOpt := logger.New(nil, logger.AddStacktrace(logger.WarnLevel.ZapLevel()))
+	logOpt.Debug("debug")
+	logOpt.Warn("warn")
+	logOpt.Error("err")
+}
+
 func TestPanic(t *testing.T) {
 	test := func(lv logger.Level, method string) {
 		defer func() { recover() }()
