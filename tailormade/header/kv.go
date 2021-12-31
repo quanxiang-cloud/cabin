@@ -21,15 +21,16 @@ const (
 	timezone = "Timezone"
 )
 
-type key string
-
 // MutateContext return context.Context,
 // carry request id and timezone if value exists.
 func MutateContext(c CTX) context.Context {
+	var (
+		_requestID interface{} = "Request-Id"
+		_timezone  interface{} = "Timezone"
+	)
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, key(requestID), c.GetHeader(requestID))
-	ctx = context.WithValue(ctx, key(timezone), c.GetHeader(timezone))
-
+	ctx = context.WithValue(ctx, _requestID, c.GetHeader(requestID))
+	ctx = context.WithValue(ctx, _timezone, c.GetHeader(timezone))
 	return ctx
 }
 
