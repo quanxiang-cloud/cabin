@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/quanxiang-cloud/cabin/boxing/header"
 	"github.com/quanxiang-cloud/cabin/logger"
-	"github.com/quanxiang-cloud/cabin/tailormade/header"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

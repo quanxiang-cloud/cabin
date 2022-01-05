@@ -25,9 +25,9 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/quanxiang-cloud/cabin/boxing/header"
+	"github.com/quanxiang-cloud/cabin/boxing/resp"
 	e "github.com/quanxiang-cloud/cabin/error"
-	"github.com/quanxiang-cloud/cabin/tailormade/header"
-	"github.com/quanxiang-cloud/cabin/tailormade/resp"
 )
 
 // Config client config
