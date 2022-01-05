@@ -12,8 +12,6 @@ func TestGenID(t *testing.T) {
 	}
 	tbID, _ := ShortIDWithDic(-1, "ABCDFGHJKLMNPQRSTVWXZ012456789", 26)
 	testCases := []*testCase{
-		&testCase{"GenID", GenID()},
-		&testCase{"GenUpperID", GenUpperID()},
 		&testCase{"StringUUID", StringUUID()},
 		&testCase{"String", String(DefaultShortNameLen)},
 
