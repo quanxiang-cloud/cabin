@@ -16,14 +16,14 @@ package elastic
 import (
 	"fmt"
 
-	"github.com/go-logr/logr"
+	pkglogger "github.com/quanxiang-cloud/cabin/logger"
 )
 
 type logger struct {
-	log logr.Logger
+	log pkglogger.AdaptedLogger
 }
 
-func newLogger(log logr.Logger) logger {
+func newLogger(log pkglogger.AdaptedLogger) logger {
 	return logger{
 		log: log.WithName("elastic"),
 	}

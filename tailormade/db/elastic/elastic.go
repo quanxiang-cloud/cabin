@@ -16,7 +16,8 @@ package elastic
 import (
 	"context"
 
-	"github.com/go-logr/logr"
+	pkglogger "github.com/quanxiang-cloud/cabin/logger"
+
 	"github.com/olivere/elastic/v7"
 )
 
@@ -27,7 +28,7 @@ type Config struct {
 }
 
 // NewClient new elasticsearch client
-func NewClient(conf *Config, log logr.Logger) (*elastic.Client, error) {
+func NewClient(conf *Config, log pkglogger.AdaptedLogger) (*elastic.Client, error) {
 	opts := make([]elastic.ClientOptionFunc, 0, len(conf.Host))
 	for _, host := range conf.Host {
 		opts = append(opts, elastic.SetURL(host))
