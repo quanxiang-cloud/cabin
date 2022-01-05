@@ -18,21 +18,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-logr/logr"
+	pkglogger "github.com/quanxiang-cloud/cabin/logger"
+
 	lg "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 )
 
 // logger gorm logger
 type logger struct {
-	log logr.Logger
+	log pkglogger.AdaptedLogger
 	lg.Config
 	infoStr, warnStr, errStr            string
 	traceStr, traceErrStr, traceWarnStr string
 }
 
 // newLogger new gorm logger
-func newLogger(log logr.Logger, config lg.Config) lg.Interface {
+func newLogger(log pkglogger.AdaptedLogger, config lg.Config) lg.Interface {
 	log = log.WithName("gorm")
 	var (
 		infoStr      = "%s\n[info] "

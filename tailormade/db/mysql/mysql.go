@@ -17,7 +17,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-logr/logr"
+	pkglogger "github.com/quanxiang-cloud/cabin/logger"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	lg "gorm.io/gorm/logger"
@@ -63,7 +64,7 @@ func (c *Config) string(format string) string {
 }
 
 // New return a gorm db
-func New(config Config, log logr.Logger) (*gorm.DB, error) {
+func New(config Config, log pkglogger.AdaptedLogger) (*gorm.DB, error) {
 	var logger lg.Interface
 	if config.Log {
 		logger = newLogger(log, lg.Config{
