@@ -51,9 +51,9 @@ func Format(data interface{}, err error) (r *Resp) {
 		return
 	}
 
-	var fail = func(err error) (r *Resp) {
+	var fail = func(r *Resp, err error) *Resp {
 		r.Code = e.Unknown
-		return
+		return r
 	}
 
 	switch err := err.(type) {
@@ -61,13 +61,13 @@ func Format(data interface{}, err error) (r *Resp) {
 		r.Code = err.Code
 	case *e.Error:
 		if err == nil {
-			return fail(nil)
+			return fail(r, nil)
 		}
 		r.Code = err.Code
 	case validator.ValidationErrors:
 		r.Code = e.ErrParams
 	default:
-		return fail(err)
+		return fail(r, err)
 	}
 
 	r.Message = err.Error()
