@@ -5,28 +5,44 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-logr/zapr"
+	"go.uber.org/zap"
+
 	"github.com/quanxiang-cloud/cabin/logger"
 )
 
 func TestLogger(t *testing.T) {
-	defer func() {
-		if err := recover(); err != nil {
-			logger.Logger.Warn("TestLogger recovered")
-		}
-	}()
-
 	os.Setenv(logger.EnvLogLevel, "0")
 
 	cfg := &logger.Config{
 		Level: logger.DebugLevel.Int(),
 	}
 	logger.Logger = logger.New(cfg)
+	testLogger(t)
+}
+
+func TestLogr(t *testing.T) {
+	l, err := zap.NewDevelopment()
+	if err != nil {
+		t.Error(err)
+	}
+	log := zapr.NewLogger(l)
+	logger.Logger = logger.NewFromLogr(log)
+	testLogger(t)
+}
+
+func testLogger(t *testing.T) {
+	defer func() {
+		if err := recover(); err != nil {
+			logger.Logger.Warn("TestLogger recovered")
+		}
+	}()
 
 	namedLog := logger.Logger.WithName("named")
 	log := logger.Logger
 	valueLog := logger.Logger.WithValues(
-		logger.ZapField("val", "foo"),
-		logger.ZapField("val2", "bar"),
+		"val", "foo",
+		"val2", "bar",
 	)
 
 	log.Sync()
@@ -42,10 +58,10 @@ func TestLogger(t *testing.T) {
 	log.Error("err")
 	namedLog.Debugw("debug", "foo", 1)
 	namedLog.Infow("info", "foo", 1)
-	namedLog.Warnw("warn", logger.ZapField("foo", "zaped"))
+	namedLog.Warnw("warn", "foo", "zaped")
 	valueLog.Debugw("debug", "foo", 1)
 	valueLog.Infow("info", "foo", 1)
-	valueLog.Warnw("warn", logger.ZapField("foo", "zaped"))
+	valueLog.Warnw("warn", "foo", "zaped")
 	log.Panic("panic")
 	log.Info("info2")
 	log.Fatal("fatal")

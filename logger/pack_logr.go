@@ -4,152 +4,21 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	//"github.com/go-logr/zapr"
-	"go.uber.org/zap"
 )
 
 var _ AdaptedLogger = (*packLogr)(nil)
 
-// ZapField return a zap field key-value pair
-func ZapField(field string, val interface{}) zap.Field {
-	return zapIt(field, val)
-}
-
-// packLogr adapt logr.Loger format like Logger
 type packLogr struct {
-	l               *zap.Logger
-	minLevel        Level
-	numericLevelKey string
-	allowZapFields  bool
-	panicMessages   bool
-	keyAndValues    []zap.Field
+	l        logr.Logger
+	minLevel Level
 }
 
-func newPackLogr(cfg *Config, options ...Option) *packLogr {
-	opts := append([]Option{
-		zap.AddCallerSkip(2),
-		zap.AddStacktrace(zap.DPanicLevel)}, options...)
-	zapLogger, err := zap.NewDevelopment(opts...)
-	if err != nil {
-		panic(err)
-	}
+func newPackLogr(log logr.Logger) *packLogr {
 	p := &packLogr{
-		l:              zapLogger,
-		minLevel:       _defaultLevel,
-		allowZapFields: true,
-		keyAndValues:   nil,
+		l:        log,
+		minLevel: noLevel,
 	}
-	return p.init(cfg)
-}
-
-// init reset the log level of logger
-func (p *packLogr) init(cfg *Config) *packLogr {
-	lv := _defaultLevel.Int()
-
-	env, err := GetLogLevelFromEnv()
-	switch {
-	case err == nil:
-		lv = env
-	case cfg != nil:
-		lv = cfg.Level
-	}
-
-	return p.initLevel(lv)
-}
-
-func (p *packLogr) initLevel(lv int) *packLogr {
-	if err := validateLogLevel(lv); err == nil {
-		p.minLevel = Level(lv)
-		p.l.WithOptions(zap.AddCallerSkip(2)).Info("init-logger-level", ZapField("level", lv))
-	} else {
-		p.PutError(err, "init-logger-level", zap.Int("level", lv))
-	}
-
 	return p
-}
-
-const noLevel = -1
-
-// NOTE: from github.com/go-logr/zapr.Logger
-//
-// handleFields converts a bunch of arbitrary key-value pairs into Zap fields.  It takes
-// additional pre-converted Zap fields, for use with automatically attached fields, like
-// `error`.
-func (p *packLogr) handleFields(lvl int, args []interface{}, additional ...zap.Field) []zap.Field {
-	injectNumericLevel := p.numericLevelKey != "" && lvl != noLevel
-
-	// a slightly modified version of zap.SugaredLogger.sweetenFields
-	if len(args) == 0 {
-		// fast-return if we have no suggared fields and no "v" field.
-		if !injectNumericLevel {
-			return additional
-		}
-		// Slightly slower fast path when we need to inject "v".
-		return append(additional, zap.Int(p.numericLevelKey, lvl))
-	}
-
-	// unlike Zap, we can be pretty sure users aren't passing structured
-	// fields (since logr has no concept of that), so guess that we need a
-	// little less space.
-	numFields := len(args)/2 + len(additional)
-	if injectNumericLevel {
-		numFields++
-	}
-	fields := make([]zap.Field, 0, numFields)
-	if injectNumericLevel {
-		fields = append(fields, zap.Int(p.numericLevelKey, lvl))
-	}
-	for i := 0; i < len(args); {
-		// Check just in case for strongly-typed Zap fields,
-		// which might be illegal (since it breaks
-		// implementation agnosticism). If disabled, we can
-		// give a better error message.
-		if field, ok := args[i].(zap.Field); ok {
-			if p.allowZapFields {
-				fields = append(fields, field)
-				i++
-				continue
-			}
-			if p.panicMessages {
-				p.l.WithOptions(zap.AddCallerSkip(1)).DPanic("strongly-typed Zap Field passed to logr", zapIt("zap field", args[i]))
-			}
-			break
-		}
-
-		// make sure this isn't a mismatched key
-		if i == len(args)-1 {
-			if p.panicMessages {
-				p.l.WithOptions(zap.AddCallerSkip(1)).DPanic("odd number of arguments passed as key-value pairs for logging", zapIt("ignored key", args[i]))
-			}
-			break
-		}
-
-		// process a key-value pair,
-		// ensuring that the key is a string
-		key, val := args[i], args[i+1]
-		keyStr, isString := key.(string)
-		if !isString {
-			// if the key isn't a string, DPanic and stop logging
-			if p.panicMessages {
-				p.l.WithOptions(zap.AddCallerSkip(1)).DPanic("non-string key argument passed to logging, ignoring all later arguments", zapIt("invalid key", key))
-			}
-			break
-		}
-
-		fields = append(fields, zapIt(keyStr, val))
-		i += 2
-	}
-
-	return append(additional, fields...)
-}
-
-func zapIt(field string, val interface{}) zap.Field {
-	// Handle types that implement logr.Marshaler: log the replacement
-	// object instead of the original one.
-	if marshaler, ok := val.(logr.Marshaler); ok {
-		val = marshaler.MarshalLog()
-	}
-	return zap.Any(field, val)
 }
 
 func (p *packLogr) log(lv Level, format string, fmtArgs []interface{}, context []interface{}) {
@@ -165,50 +34,43 @@ func (p *packLogr) log(lv Level, format string, fmtArgs []interface{}, context [
 		msg = fmt.Sprintf(format, fmtArgs...)
 	}
 
-	args := p.handleFields(lv.Int(), context, p.keyAndValues...)
-	if cap(p.keyAndValues) < len(args) {
-		p.keyAndValues = args[:len(p.keyAndValues)]
-	}
-
-	switch lv {
-	case DebugLevel:
-		p.l.Debug(msg, args...)
-	case InfoLevel:
-		p.l.Info(msg, args...)
-	case WarnLevel:
-		p.l.Warn(msg, args...)
-	case ErrorLevel:
-		p.l.Error(msg, args...)
-	case DPanicLevel:
-		p.l.DPanic(msg, args...)
-	case PanicLevel:
-		p.l.Panic(msg, args...)
-	case FatalLevel:
-		p.l.Fatal(msg, args...)
+	if lv < ErrorLevel {
+		p.l.Info(msg, context...)
+	} else {
+		p.l.Error(nil, msg, context...)
 	}
 }
 
 func (p *packLogr) clone() *packLogr {
 	return &packLogr{
-		l:              p.l,
-		minLevel:       p.minLevel,
-		allowZapFields: p.allowZapFields,
-		keyAndValues:   append([]zap.Field(nil), p.keyAndValues...),
+		l:        p.l,
+		minLevel: p.minLevel,
 	}
 }
 
 // WithValues returns a new Logger with additional key/value pairs.
 func (p *packLogr) WithValues(keyAndValues ...interface{}) AdaptedLogger {
 	n := p.clone()
-	n.l = p.l.With(p.handleFields(noLevel, keyAndValues)...)
+	n.l = p.l.WithValues(keyAndValues...)
 	return n
 }
 
 // WithName returns a new Logger with the specified name appended.
 func (p *packLogr) WithName(name string) AdaptedLogger {
 	n := p.clone()
-	n.l = p.l.Named(name)
+	n.l = p.l.WithName(name)
 	return n
+}
+
+func (p *packLogr) initLevel(lv int) *packLogr {
+	if err := validateLogLevel(lv); err == nil {
+		p.minLevel = Level(lv)
+		p.l.WithCallDepth(2).Info("init-logger-level", ZapField("level", lv))
+	} else {
+		p.PutError(err, "init-logger-level", ZapField("level", lv))
+	}
+
+	return p
 }
 
 // WithLevel returns a new Logger with the specified level filter.
@@ -220,14 +82,13 @@ func (p *packLogr) WithLevel(level Level) AdaptedLogger {
 // returns the resulting Logger. It's safe to use concurrently.
 func (p *packLogr) WithOptions(opts ...Option) AdaptedLogger {
 	n := p.clone()
-	n.l = p.l.WithOptions(opts...)
 	return n
 }
 
 // PutError write log with error
 func (p *packLogr) PutError(err error, msg string, keyAndValues ...interface{}) {
 	if err != nil {
-		keyAndValues = append([]interface{}{ZapField("error", err)}, keyAndValues...)
+		keyAndValues = append([]interface{}{"error", err}, keyAndValues...)
 	}
 	p.log(ErrorLevel, msg, nil, keyAndValues)
 }
@@ -352,5 +213,5 @@ func (p *packLogr) Fatalw(msg string, keysAndValues ...interface{}) {
 
 // Sync flushes any buffered log entries.
 func (p *packLogr) Sync() error {
-	return p.l.Sync()
+	return nil
 }
