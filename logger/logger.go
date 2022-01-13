@@ -1,7 +1,11 @@
 package logger
 
+import (
+	"github.com/go-logr/logr"
+)
+
 // Logger is the default logger object.
-var Logger AdaptedLogger = New(nil)
+var Logger AdaptedLogger = NewDefault()
 
 // New create a new AdaptedLogger
 //
@@ -12,7 +16,17 @@ var Logger AdaptedLogger = New(nil)
 // 3. value of Config.Level
 // 4. default value DebugLevel(-1)
 func New(cfg *Config, options ...Option) AdaptedLogger {
-	return newPackLogr(cfg, options...)
+	return newPackZap(cfg, options...)
+}
+
+// NewDefault create a defult Logger
+func NewDefault() AdaptedLogger {
+	return New(nil)
+}
+
+// NewFromLogr new Logger from logr.Logger
+func NewFromLogr(log logr.Logger) AdaptedLogger {
+	return newPackLogr(log)
 }
 
 // AdaptedLogger is the interface that adapt zap.logger

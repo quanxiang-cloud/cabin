@@ -16,14 +16,23 @@ import (
 	"go.uber.org/zap"
 )
 
-// GINRequestID get Request-Id from header
-func GINRequestID(c *gin.Context) zap.Field {
-	k, v := header.GetRequestIDKV(c).Wreck()
-	return zap.String(k, v)
+// GetRequestID get Request-Id from header
+func GetRequestID(c *gin.Context) zap.Field {
+	return ginHeader(c, header.RequestID)
 }
 
-// GinLogger gin logger
-func GinLogger() gin.HandlerFunc {
+// GetTimezone get Timezone from header
+func GetTimezone(c *gin.Context) zap.Field {
+	return ginHeader(c, header.Timezone)
+}
+
+func ginHeader(c *gin.Context, key string) zap.Field {
+	val := c.GetHeader(key)
+	return zap.String(key, val)
+}
+
+// LoggerFunc gin logger
+func LoggerFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Start timer
 		start := time.Now()
@@ -39,7 +48,7 @@ func GinLogger() gin.HandlerFunc {
 
 		// Stop timer
 		logger.Logger.Infow("[GIN]",
-			GINRequestID(c),
+			GetRequestID(c),
 			zap.Float64("latency", time.Now().Sub(start).Seconds()),
 			zap.String("clientIP", c.ClientIP()),
 			zap.String("method", c.Request.Method),
@@ -51,8 +60,8 @@ func GinLogger() gin.HandlerFunc {
 	}
 }
 
-// GinRecovery gin recovery
-func GinRecovery() gin.HandlerFunc {
+// RecoveryFunc gin recovery
+func RecoveryFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -68,7 +77,7 @@ func GinRecovery() gin.HandlerFunc {
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
 					logger.Logger.Error(c.Request.URL.Path,
-						GINRequestID(c),
+						GetRequestID(c),
 						zap.Any("error", err),
 						zap.String("request", string(httpRequest)),
 					)
@@ -78,7 +87,7 @@ func GinRecovery() gin.HandlerFunc {
 				}
 
 				logger.Logger.Error("[Recovery from panic]",
-					GINRequestID(c),
+					GetRequestID(c),
 					zap.Any("error", err),
 					zap.String("request", string(httpRequest)),
 					zap.String("stack", string(debug.Stack())),

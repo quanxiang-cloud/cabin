@@ -6,6 +6,7 @@ require (
 	github.com/Shopify/sarama v1.30.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-logr/logr v1.2.2
+	github.com/go-logr/zapr v1.2.2 // indirect
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/google/uuid v1.3.0
