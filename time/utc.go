@@ -20,9 +20,11 @@ import (
 	"time"
 )
 
+// UTC timezone
 //go:generate stringer -type UTC
 type UTC int
 
+// UTC timezone
 const (
 	UTC_12 UTC = iota - 12
 	UTC_11
@@ -51,6 +53,7 @@ const (
 	UTC12
 )
 
+// predefined error
 var (
 	ErrFormat = errors.New("error format")
 )

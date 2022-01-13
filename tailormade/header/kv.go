@@ -15,10 +15,11 @@ package header
 
 import "context"
 
+// predefined header
 const (
-	requestID = "Request-Id"
+	RequestID = "Request-Id"
 
-	timezone = "Timezone"
+	Timezone = "Timezone"
 )
 
 // MutateContext return context.Context,
@@ -29,8 +30,8 @@ func MutateContext(c CTX) context.Context {
 		_timezone  interface{} = "Timezone"
 	)
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, _requestID, c.GetHeader(requestID))
-	ctx = context.WithValue(ctx, _timezone, c.GetHeader(timezone))
+	ctx = context.WithValue(ctx, _requestID, c.GetHeader(RequestID))
+	ctx = context.WithValue(ctx, _timezone, c.GetHeader(Timezone))
 	return ctx
 }
 
@@ -57,20 +58,20 @@ func (k KV) Fuzzy() (result []interface{}) {
 
 // GetRequestIDKV return request id
 func GetRequestIDKV(ctx context.Context) KV {
-	i := ctx.Value(requestID)
+	i := ctx.Value(RequestID)
 	rid, ok := i.(string)
 	if ok {
-		return KV{requestID, rid}
+		return KV{RequestID, rid}
 	}
-	return KV{requestID, "unexpected type"}
+	return KV{RequestID, "unexpected type"}
 }
 
 // GetTimezone return timezone
 func GetTimezone(ctx context.Context) KV {
-	i := ctx.Value(timezone)
+	i := ctx.Value(Timezone)
 	tz, ok := i.(string)
 	if ok {
-		return KV{timezone, tz}
+		return KV{Timezone, tz}
 	}
-	return KV{timezone, "unexpected type"}
+	return KV{Timezone, "unexpected type"}
 }
