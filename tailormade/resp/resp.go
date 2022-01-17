@@ -16,6 +16,8 @@ package resp
 import (
 	"net/http"
 
+	"github.com/quanxiang-cloud/cabin/logger"
+
 	"github.com/go-playground/validator/v10"
 	e "github.com/quanxiang-cloud/cabin/error"
 )
@@ -53,6 +55,7 @@ func Format(data interface{}, err error) (r *Resp) {
 
 	var fail = func(r *Resp, err error) *Resp {
 		r.Code = e.Unknown
+		logger.Logger.PutError(err, "resp-known-error")
 		return r
 	}
 
