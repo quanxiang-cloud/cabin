@@ -28,8 +28,7 @@ type Config struct {
 }
 
 // NewClient new elasticsearch client
-func NewClient(conf *Config, log pkglogger.AdaptedLogger) (*elastic.Client, error) {
-	opts := make([]elastic.ClientOptionFunc, 0, len(conf.Host))
+func NewClient(conf *Config, log pkglogger.AdaptedLogger, opts ...elastic.ClientOptionFunc) (*elastic.Client, error) {
 	for _, host := range conf.Host {
 		opts = append(opts, elastic.SetURL(host))
 	}
