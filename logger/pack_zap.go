@@ -29,7 +29,9 @@ func newPackZap(cfg *Config, options ...Option) *packZap {
 	opts := append([]Option{
 		zap.AddCallerSkip(2),
 		zap.AddStacktrace(zap.DPanicLevel)}, options...)
-	zapLogger, err := zap.NewDevelopment(opts...)
+	zapCfg := zap.NewDevelopmentConfig()
+	zapCfg.OutputPaths = []string{"stdout"}
+	zapLogger, err := zapCfg.Build(opts...)
 	if err != nil {
 		panic(err)
 	}
